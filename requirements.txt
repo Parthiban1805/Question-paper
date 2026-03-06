@@ -1,0 +1,6 @@
+Flask
+google-generativeai
+fpdf
+Pillow
+python-docx
+html2canvas

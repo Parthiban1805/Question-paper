@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question Paper Generator - Result</title>
+    <style>
+        :root {
+            --primary: #4CAF50;
+            --primary-dark: #45a049;
+            --primary-light: #a8d9ac;
+            --secondary: #007bff;
+            --secondary-dark: #0056b3;
+            --white: #ffffff;
+            --gray-100: #f8f9fa;
+            --shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--primary);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: var(--white);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .header-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header-item {
+            padding: 10px;
+            background-color: var(--gray-100);
+            border-radius: 6px;
+        }
+
+        .unit-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 40px;
+            box-shadow: var(--shadow);
+        }
+
+        .unit-heading {
+            font-size: 1.2rem;
+            color: var(--primary);
+            margin: 30px 0 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--primary-light);
+        }
+
+        th, td {
+            border: 1px solid var(--primary-light);
+            padding: 12px 15px;
+        }
+
+        th {
+            background-color: var(--gray-100);
+            font-weight: bold;
+            text-align: center;
+        }
+
+        td {
+            vertical-align: top;
+        }
+
+        .question-cell {
+            min-width: 400px;
+        }
+
+        .marks-cell {
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .button-container {
+            text-align: center;
+            margin: 30px 0;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+            border: none;
+            color: var(--white);
+        }
+
+        .generate-btn {
+            background-color: var(--secondary);
+        }
+
+        .generate-btn:hover {
+            background-color: var(--secondary-dark);
+        }
+
+        .new-paper-btn {
+            background-color: var(--primary);
+        }
+
+        .new-paper-btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        #loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            .header-details {
+                grid-template-columns: 1fr;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+
+            .question-cell {
+                min-width: auto;
+            }
+
+            .button-container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Question Paper</h1>
+            <div class="header-details">
+                <div class="header-item">
+                    <strong>Subject:</strong> {{ subject_name }}
+                </div>
+                <div class="header-item">
+                    <strong>Course Code:</strong> {{ course_code }}
+                </div>
+                <div class="header-item">
+                    <strong>Duration:</strong> {{ exam_time }} Hours
+                </div>
+                <div class="header-item">
+                    <strong>Total Marks:</strong> {{ total_marks }}
+                </div>
+                <div class="header-item">
+                    <strong>Semester:</strong> {{ semester }}
+                </div>
+            </div>
+        </div>
+
+        <div id="questionTables">
+            {% for unit, questions in questions_by_unit.items() %}
+            <h3 class="unit-heading">Unit {{ unit }}</h3>
+            <table class="unit-table">
+                <thead>
+                    <tr>
+                        <th width="10%">UNIT</th>
+                        <th width="15%">Q. No.</th>
+                        <th width="55%">Questions</th>
+                        <th width="20%">Marks / CLO LEVEL</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for question in questions %}
+                    <tr>
+                        <td>{{ unit }}</td>
+                        <td>{{ question.qno }}</td>
+                        <td class="question-cell">{{ question.question }}</td>
+                        <td class="marks-cell">{{ question.marks }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endfor %}
+        </div>
+        
+        <div class="button-container">
+            <button id="generateBtn" class="btn generate-btn" onclick="generatePDF()">
+                Generate PDF
+            </button>
+            <button class="btn new-paper-btn" onclick="window.location.href='/index'">
+                Generate New Paper
+            </button>
+        </div>
+        
+        <div id="loading">
+            Generating PDF... Please wait
+        </div>
+    </div>
+
+    <script>
+        function generatePDF() {
+            const generateBtn = document.getElementById('generateBtn');
+            const loading = document.getElementById('loading');
+            
+            generateBtn.disabled = true;
+            loading.style.display = 'block';
+            
+            // Collect data from the tables
+            const tables = document.querySelectorAll('.unit-table');
+            const tableData = Array.from(tables).map(table => {
+                const rows = table.querySelectorAll('tbody tr');
+                return Array.from(rows).map(row => {
+                    const cells = row.querySelectorAll('td');
+                    return Array.from(cells).map(cell => cell.textContent.trim());
+                });
+            });
+            
+            fetch('/save_pdf', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ tableData: tableData })
+            })
+            .then(response => response.json())
+            .then(data => {
+                loading.style.display = 'none';
+                generateBtn.disabled = false;
+                
+                if (data.error) {
+                    alert('Error generating PDF: ' + data.error);
+                } else {
+                    window.open(data.pdf_url, '_blank');
+                }
+            })
+            .catch(error => {
+                loading.style.display = 'none';
+                generateBtn.disabled = false;
+                console.error('Error:', error);
+                alert('Error generating PDF');
+            });
+        }
+    </script>
+</body>
+</html>

@@ -19,7 +19,9 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 # Configure Gemini API
-GEMINI_API_KEY = "AIzaSyAnMlXs16_Otj7LrYboVUxrtSzehYslpf8"
+# IMPORTANT: The previous API key was blocked by Google due to being leaked.
+# Please get a new key from https://aistudio.google.com/app/apikey
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "AIzaSyBrkhMB1Ys_12EctscDW-Bnn0H7IcUQpb4")
 genai.configure(api_key=GEMINI_API_KEY)
 
 # Configure generation parameters
@@ -31,8 +33,9 @@ generation_config = {
     "response_mime_type": "text/plain",
 }
 
+# The gemini-2.0-flash-exp model has been removed/changed. Switched to gemini-2.5-flash (or gemini-2.0-flash).
 model = genai.GenerativeModel(
-    model_name="gemini-2.0-flash-exp",
+    model_name="gemini-2.0-flash",
     generation_config=generation_config,
 )
 
